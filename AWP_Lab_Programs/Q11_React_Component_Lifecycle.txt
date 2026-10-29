@@ -1,0 +1,63 @@
+// File: src/App.js
+import React, { Component } from "react";
+
+class LifeCycleDemo extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            count: 0
+        };
+        console.log("1. Constructor");
+    }
+
+    componentDidMount() {
+        console.log("2. Component Did Mount");
+    }
+
+    componentDidUpdate() {
+        console.log("3. Component Did Update");
+    }
+
+    componentWillUnmount() {
+        console.log("4. Component Will Unmount");
+    }
+
+    render() {
+        console.log("Render");
+        return (
+            <div>
+                <h2>React Component Lifecycle</h2>
+                <p>Count: {this.state.count}</p>
+                <button
+                    onClick={() =>
+                        this.setState(prevState => ({ count: prevState.count + 1 }))
+                    }
+                >
+                    Increment
+                </button>
+            </div>
+        );
+    }
+}
+
+class App extends Component {
+    state = {
+        show: true
+    };
+
+    render() {
+        return (
+            <div>
+                {this.state.show && <LifeCycleDemo />}
+                <button
+                    onClick={() =>
+                        this.setState(prevState => ({ show: !prevState.show }))
+                    }
+                >
+                    Mount / Unmount
+                </button>
+            </div>
+        );
+    }
+}
+export default App;

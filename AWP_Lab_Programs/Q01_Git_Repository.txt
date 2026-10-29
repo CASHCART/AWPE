@@ -1,0 +1,19 @@
+git config --global user.name "MKR"
+git config --global user.email "24B81A67D8@gmail.com"
+
+git init
+git branch -M main
+
+git add .
+git commit -m "This is F1"
+
+git remote add origin "https://github.com/CASHCART/Awplab1.git"
+git push -u origin main
+
+git clone "https://github.com/CASHCART/Awplab1.git"
+cd Awplab1
+
+printf 'Hello World\n' > Hello.txt
+git add .
+git commit -m "Adding"
+git push

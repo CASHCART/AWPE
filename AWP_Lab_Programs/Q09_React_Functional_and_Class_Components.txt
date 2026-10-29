@@ -1,0 +1,30 @@
+// 9a) File: prop/src/App.js
+import React from 'react';
+function Student(props) {
+    return (
+        <div>
+            <h2>Name: {props.name}</h2>
+            <h2>Age: {props.age}</h2>
+        </div>
+    );
+}
+function App() {
+    return (
+        <div>
+            <Student name="MKR" age="20" />
+        </div>
+    );
+}
+export default App;
+
+// 9b) File: class-comp/src/App.js
+import React, { Component } from "react";
+class Welcome extends Component {
+    render() {
+        return <h1>Hello World, {this.props.name}</h1>;
+    }
+}
+function App() {
+    return <Welcome name="MKR" />;
+}
+export default App;

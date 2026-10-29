@@ -1,0 +1,119 @@
+
+2. FIREBASE STUDENT MANAGEMENT SYSTEM
+
+AIM:
+Perform CRUD operations (Insert, Display, Update and Delete) using Firebase Realtime Database.
+
+STEP 1: CREATE FOLDER
+
+mkdir firebase-student-management
+cd firebase-student-management
+
+STEP 2: FIREBASE SETUP
+
+1. Open https://console.firebase.google.com/
+2. Create a Firebase project.
+3. Register a Web App (</>).
+4. Go to Build → Realtime Database → Create Database.
+5. Copy the database URL.
+6. Go to Project Settings → General → Your Apps → Config.
+7. Copy the Firebase configuration.
+8. Enable suitable database rules for temporary lab practice.
+
+STEP 3: CREATE index.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Database</title>
+</head>
+<body>
+    <h2>Student Database</h2>
+
+    <input id="roll" placeholder="Roll Number">
+    <input id="name" placeholder="Name">
+    <input id="br" placeholder="Branch">
+    <input id="yr" placeholder="Year">
+    <input id="cg" placeholder="CGPA">
+
+    <button onclick="insertData()">Insert</button>
+    <button onclick="deleteData()">Delete</button>
+    <button onclick="updateData()">Update</button>
+    <button onclick="displayData()">Display</button>
+
+    <div id="d">No data loaded</div>
+
+    <script type="module">
+        import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+        import { getDatabase, ref, set, get, update, remove }
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const val = id => document.getElementById(id).value;
+        const student = () => ({
+            name: val("name"),
+            branch: val("br"),
+            year: val("yr"),
+            cgpa: val("cg")
+        });
+
+        window.insertData = () =>
+            set(ref(db, "student/" + val("roll")), student())
+            .then(() => alert("Inserted"));
+
+        window.updateData = () =>
+            update(ref(db, "student/" + val("roll")), student())
+            .then(() => alert("Updated"));
+
+        window.deleteData = () =>
+            remove(ref(db, "student/" + val("roll")))
+            .then(() => alert("Deleted"));
+
+        window.displayData = () =>
+            get(ref(db, "student/" + val("roll")))
+            .then(s => {
+                document.getElementById("d").innerHTML =
+                    s.exists() ? JSON.stringify(s.val()) : "Not found";
+            });
+    </script>
+</body>
+</html>
+
+STEP 4: EXECUTE THE PROGRAM
+
+Run from the folder containing index.html:
+
+npx --yes http-server . -p 8080
+
+Open in browser:
+http://localhost:8080/index.html
+
+STEP 5: TEST CRUD OPERATIONS
+
+1. Enter roll: 101, name: Ravi, branch: CSE, year: 3, CGPA: 8.5.
+2. Click Insert to save the record.
+3. Click Display to retrieve the record.
+4. Change the name or CGPA and click Update.
+5. Click Delete to remove the record.
+
+VIVA POINTS
+
+set()    - Insert
+get()    - Display
+update() - Update
+remove() - Delete
+
+EXPECTED RESULT:
+Student records are inserted, displayed, updated and deleted using Firebase Realtime Database.

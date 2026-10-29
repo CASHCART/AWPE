@@ -1,0 +1,115 @@
+
+const http = require('http');
+const stu = require('./students.json');
+const fs = require('fs');
+const url = require('url');
+
+const port = 3000;
+
+const server = http.createServer(function(req, res) {
+    res.setHeader("Content-Type", "text/html");
+
+    // Endpoint 1: Home
+    if (req.method == "GET" && req.url == "/") {
+        res.write("<h1>Welcome to REST API Server</h1>");
+        res.end();
+    }
+
+    // Endpoint 2: Read all students
+    if (req.method == "GET" && req.url == "/list") {
+        fs.readFile("students.json", function(err, data) {
+            if (err) {
+                res.write("Error reading file");
+                res.end();
+                return;
+            }
+            res.write(data);
+            res.end();
+        });
+    }
+
+    // Endpoint 3: Insert student
+    if (req.method == "POST") {
+        let body = "";
+
+        req.on("data", chunk => body += chunk);
+
+        req.on("end", () => {
+            const newStu = JSON.parse(body);
+            stu.push(newStu);
+            mywrite(stu);
+
+            res.write("<h1>Student Record Inserted</h1>");
+            res.end();
+        });
+    }
+
+    // Endpoint 4: Update student
+    if (req.method == "PUT") {
+        const upstu = url.parse(req.url, true).query;
+
+        for (let s in stu) {
+            if (stu[s]['roll'] == upstu['roll']) {
+                stu[s]['name'] = upstu['name'];
+                stu[s]['year'] = upstu['year'];
+                stu[s]['branch'] = upstu['branch'];
+                stu[s]['cgpa'] = upstu['cgpa'];
+
+                mywrite(stu);
+                res.write("<h1>Student Data Updated Successfully</h1>");
+            }
+        }
+        res.end();
+    }
+
+    // Endpoint 5: Delete student
+    if (req.method == "DELETE") {
+        const delstu = url.parse(req.url, true).query;
+
+        for (let s in stu) {
+            if (stu[s]['roll'] == delstu['roll']) {
+                stu.splice(s, 1);
+                mywrite(stu);
+
+                res.write("<h1>Successfully Deleted</h1>");
+                break;
+            }
+        }
+        res.end();
+    }
+
+    // Function to write data into JSON file
+    function mywrite(data) {
+        fs.writeFile("students.json",
+            JSON.stringify(data, null, 2),
+            function(err) {
+                if (err) console.log(err);
+            }
+        );
+    }
+});
+
+server.listen(port, function() {
+    console.log("Server running on port " + port);
+});
+
+
+students.js
+
+
+[
+    {
+        "roll": "101",
+        "name": "Ravi",
+        "year": "3",
+        "branch": "CSE",
+        "cgpa": "8.5"
+    },
+    {
+        "roll": "102",
+        "name": "Rahul",
+        "year": "3",
+        "branch": "CSE",
+        "cgpa": "9.0"
+    }
+]

@@ -1,0 +1,162 @@
+// File: src/App.js
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+function App() {
+  const [weather, setWeather] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [err, setErr] = useState("");
+  const [forecastErr, setForecastErr] = useState("");
+  const [weatherLoading, setWeatherLoading] = useState(true);
+  const [forecastLoading, setForecastLoading] = useState(true);
+
+  const API_KEY = "193b343712d3c16947b9fe2b4cade9eb";
+  const city = "Hyderabad";
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const requestOptions = { signal: controller.signal };
+
+    axios.get(
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`,
+      requestOptions
+    )
+      .then(res => setWeather(res.data))
+      .catch(e => {
+        if (!axios.isCancel(e)) {
+          setErr(e.response?.data?.message || "Weather Error");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setWeatherLoading(false);
+      });
+
+    axios.get(
+      `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`,
+      requestOptions
+    )
+      .then(res => setHistory(
+        res.data.list.slice(0, 8).map(item => ({
+          time: item.dt_txt,
+          temperature: item.main.temp
+        }))
+      ))
+      .catch(e => {
+        if (!axios.isCancel(e)) {
+          setForecastErr(e.response?.data?.message || "Forecast Error");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setForecastLoading(false);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  const chartData = {
+    labels: history.map(item => item.time),
+    datasets: [{
+      label: "Temperature",
+      data: history.map(item => item.temperature),
+      borderWidth: 3,
+      pointRadius: 5,
+      tension: 0.3
+    }]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: true },
+      title: {
+        display: true,
+        text: "Hyderabad Weather Forecast"
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: false,
+        title: { display: true, text: "Temp" }
+      },
+      x: {
+        title: { display: true, text: "Date and Time" }
+      }
+    }
+  };
+
+  return (
+    <div style={{
+      width: "80%",
+      margin: "30px auto",
+      fontFamily: "Arial"
+    }}>
+      <h1>Weather Information</h1>
+
+      {err && (
+        <p style={{ color: "red" }}>
+          Error: {err}
+        </p>
+      )}
+
+      {weather ? (
+        <div>
+          <h2>{weather.name}</h2>
+          <p><b>Temperature:</b> {weather.main.temp}</p>
+          <p><b>Feels Like:</b> {weather.main.feels_like}</p>
+          <p><b>Humidity:</b> {weather.main.humidity}</p>
+          <p><b>Weather:</b> {weather.weather[0].description}</p>
+          <p><b>Wind Speed:</b> {weather.wind.speed}</p>
+        </div>
+      ) : weatherLoading ? (
+        <p>Loading current weather...</p>
+      ) : (
+        <p>Current weather unavailable.</p>
+      )}
+
+      <h2>Weather Graph</h2>
+
+      {forecastErr && <p style={{ color: "red" }}>Error: {forecastErr}</p>}
+      {history.length > 0
+        ? <Line data={chartData} options={chartOptions} />
+        : forecastLoading
+          ? <p>Loading weather graph...</p>
+          : <p>Weather graph unavailable.</p>
+      }
+    </div>
+  );
+}
+
+export default App;
+
+
+
+Terminal Commands
+
+
+npx create-react-app weather-app
+cd weather-app
+npm install axios react-chartjs-2 chart.js
+```
+
+

@@ -1,0 +1,108 @@
+
+var express = require("express");
+var fs = require("fs");
+var app = express();
+const bp = require("body-parser");
+let stu = require("./students.json");
+
+app.use(bp.urlencoded({ extended: true }));
+app.use(bp.json());
+
+// Display welcome message
+app.get("/", (req, res) => {
+    res.send("<h3>Welcome to REST API</h3>");
+});
+
+// Read all student records
+app.get("/list", (req, res) => {
+    fs.readFile("students.json", (err, data) => {
+        if (err) {
+            console.error("Error in reading file", err);
+            return res.status(500).send("Error reading file");
+        } else {
+            res.write(data);
+            res.end("The data reading successfully");
+        }
+    });
+});
+
+// Insert student record
+app.post("/", (req, res) => {
+    const newStu = req.body;
+    stu.push(newStu);
+    mywrite(stu);
+    res.send("Inserted successfully");
+});
+
+// Update student record
+app.put("/", (req, res) => {
+    const upstu = req.body;
+
+    for (let s in stu) {
+        if (stu[s]["roll"] == upstu["roll"]) {
+            stu[s]["name"] = upstu["name"];
+            stu[s]["year"] = upstu["year"];
+            stu[s]["branch"] = upstu["branch"];
+            stu[s]["cgpa"] = upstu["cgpa"];
+
+            mywrite(stu);
+            return res.send("Updated successfully");
+        }
+    }
+
+    res.end("Student not found");
+});
+
+// Delete student record
+app.delete("/", (req, res) => {
+    const delstu = req.body;
+
+    for (let s in stu) {
+        if (stu[s]["roll"] == delstu["roll"]) {
+            stu.splice(s, 1);
+            mywrite(stu);
+            return res.end("Deleted successfully");
+        }
+    }
+
+    res.end("Student not found");
+});
+
+// Write data into JSON file
+function mywrite(data) {
+    fs.writeFile(
+        "students.json",
+        JSON.stringify(data, null, 2),
+        function(err) {
+            if (err)
+                console.error("Error writing file:", err);
+        }
+    );
+}
+
+const PORT = 3000;
+
+app.listen(PORT, () => {
+    console.log("Express server explicitly running on port " + PORT);
+});
+
+
+students.json
+
+
+[
+    {
+        "roll": "101",
+        "name": "Ravi",
+        "year": "3",
+        "branch": "CSE",
+        "cgpa": "8.5"
+    },
+    {
+        "roll": "102",
+        "name": "Rahul",
+        "year": "3",
+        "branch": "CSE",
+        "cgpa": "9.0"
+    }
+]

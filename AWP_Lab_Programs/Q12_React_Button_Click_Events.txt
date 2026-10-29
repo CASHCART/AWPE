@@ -1,0 +1,26 @@
+// File: src/App.js
+import React from "react";
+function App() {
+    function showDate() {
+        const date = new Date();
+        document.getElementById("output").innerText =
+            date.toLocaleString();
+    }
+    const showGoodBye = () => {
+        document.getElementById("output").innerText =
+            "Good Bye";
+    };
+    return (
+        <div>
+            <h2>React Event Handling</h2>
+            <button onClick={showDate}>
+                Show Date and Time
+            </button>
+            <button onClick={showGoodBye}>
+                Say Good Bye
+            </button>
+            <h3 id="output"></h3>
+        </div>
+    );
+}
+export default App;

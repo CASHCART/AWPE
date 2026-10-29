@@ -1,0 +1,245 @@
+## server.js
+
+```javascript
+const express = require('express');
+const fs = require('fs');
+const bp = require('body-parser');
+const jwt = require('jsonwebtoken');
+
+const app = express();
+const PORT = 3000;
+let stu = require('./students.json');
+
+app.use(bp.urlencoded({ extended: true }));
+app.use(bp.json());
+
+const SECRET_KEY = "mysecretkey";
+
+// LOGIN
+app.post('/login', function(req, res) {
+    const { username, password } = req.body;
+
+    if (username == "admin" && password == "12345") {
+        const token = jwt.sign(
+            { username: username },
+            SECRET_KEY,
+            { expiresIn: '1h' }
+        );
+
+        res.json({ token: token });
+    } else {
+        res.status(401).send("Invalid credentials");
+    }
+});
+
+// VERIFY TOKEN
+function verifyToken(req, res, next) {
+    const bearerHeader = req.headers['authorization'];
+
+    if (typeof bearerHeader !== 'undefined') {
+        const token = bearerHeader.split(' ')[1];
+
+        jwt.verify(token, SECRET_KEY, (err, authData) => {
+            if (err) {
+                return res.status(403).send("Invalid token");
+            } else {
+                req.user = authData;
+                next();
+            }
+        });
+    } else {
+        res.status(403).send("Token missing");
+    }
+}
+
+// HOME
+app.get("/", (req, res) => {
+    res.send("<h3>JWT Protected Express REST API</h3>");
+});
+
+// GET
+app.get("/list", verifyToken, (req, res) => {
+    fs.readFile("students.json", function(err, data) {
+        if (err)
+            return res.status(500).send("Error reading file");
+
+        res.write(data);
+        res.end();
+    });
+});
+
+// POST
+app.post("/", verifyToken, (req, res) => {
+    const newStu = req.body;
+    stu.push(newStu);
+    mywrite(stu);
+    res.send("Inserted successfully");
+});
+
+// PUT
+app.put("/", verifyToken, (req, res) => {
+    const upstu = req.body;
+    let found = false;
+
+    for (let s in stu) {
+        if (stu[s]["roll"] == upstu["roll"]) {
+            stu[s]["name"] = upstu["name"];
+            stu[s]["year"] = upstu["year"];
+            stu[s]["branch"] = upstu["branch"];
+            stu[s]["cgpa"] = upstu["cgpa"];
+            found = true;
+            break;
+        }
+    }
+
+    if (found) {
+        mywrite(stu);
+        res.send("Updated successfully");
+    } else {
+        res.status(404).send("Student not found");
+    }
+});
+
+// DELETE
+app.delete("/", verifyToken, (req, res) => {
+    const delstu = req.body;
+    const initialLength = stu.length;
+    stu = stu.filter(s => s.roll != delstu.roll);
+
+    if (stu.length < initialLength) {
+        mywrite(stu);
+        res.send("Deleted successfully");
+    } else {
+        res.status(404).send("Student not found");
+    }
+});
+
+// WRITE TO FILE
+function mywrite(data) {
+    fs.writeFile("students.json", JSON.stringify(data, null, 2), function(err) {
+        if (err) console.error("Error writing file:", err);
+    });
+}
+
+// START SERVER
+app.listen(PORT, () => {
+    console.log("Server running on port " + PORT);
+});
+```
+
+## students.json
+
+Create this file in the same folder as `server.js`.
+
+```json
+[
+  {
+    "roll": "101",
+    "name": "Ravi",
+    "year": "3",
+    "branch": "CSE",
+    "cgpa": "8.5"
+  }
+]
+```
+
+## Terminal commands
+
+Run these commands inside your project folder.
+
+```bash
+npm install express body-parser jsonwebtoken
+node server.js
+```
+
+## How to test in Postman
+
+**1. Login and generate token**
+
+Method: POST
+
+URL: `http://localhost:3000/login`
+
+Body → raw → JSON:
+
+```json
+{
+  "username": "admin",
+  "password": "12345"
+}
+```
+
+Copy the token returned in the response.
+
+**2. Display students**
+
+Method: GET
+
+URL: `http://localhost:3000/list`
+
+Go to Authorization → Bearer Token and paste the token.
+
+**3. Insert student**
+
+Method: POST
+
+URL: `http://localhost:3000/`
+
+Authorization → Bearer Token: paste your token.
+
+Body → raw → JSON:
+
+```json
+{
+  "roll": "102",
+  "name": "Kiran",
+  "year": "3",
+  "branch": "CSE",
+  "cgpa": "8.7"
+}
+```
+
+**4. Update student**
+
+Method: PUT
+
+URL: `http://localhost:3000/`
+
+Use the same Bearer Token authorization.
+
+Body → raw → JSON:
+
+```json
+{
+  "roll": "102",
+  "name": "Kiran Kumar",
+  "year": "3",
+  "branch": "CSE",
+  "cgpa": "9.0"
+}
+```
+
+**5. Delete student**
+
+Method: DELETE
+
+URL: `http://localhost:3000/`
+
+Use the same Bearer Token authorization.
+
+Body → raw → JSON:
+
+```json
+{
+  "roll": "102"
+}
+```
+
+## Remember for the lab
+
+1. `POST /login` generates the JWT token.
+2. `verifyToken()` checks whether the token is valid.
+3. `verifyToken` is added to protected routes.
+4. GET displays students, POST inserts, PUT updates, and DELETE removes.
+5. `mywrite()` saves the updated array into `students.json`.
+6. Run the server using `node server.js` and stop it using Ctrl + C.

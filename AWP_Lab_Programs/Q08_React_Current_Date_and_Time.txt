@@ -1,0 +1,12 @@
+// File: src/App.js
+import React from 'react';
+function App() {
+    const currentDate = new Date();
+    return (
+        <div>
+            <h1>Current Date and Time</h1>
+            <p>{currentDate.toLocaleString()}</p>
+        </div>
+    );
+}
+export default App;
