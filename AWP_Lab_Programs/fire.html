@@ -1,0 +1,75 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Database</title>
+</head>
+<body>
+    <h2>Student Database</h2>
+
+    <input id="roll" placeholder="Roll Number">
+    <input id="name" placeholder="Name">
+    <input id="br" placeholder="Branch">
+    <input id="yr" placeholder="Year">
+    <input id="cg" placeholder="CGPA">
+
+    <button onclick="insertData()">Insert</button>
+    <button onclick="deleteData()">Delete</button>
+    <button onclick="updateData()">Update</button>
+    <button onclick="displayData()">Display</button>
+
+    <div id="d">No data loaded</div>
+
+    <script type="module">
+        import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+
+        import {
+            getDatabase, ref, set, get, update, remove
+        } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYubQgRM7z0S6bsPmxB0nZRXeoOngIu28",
+            authDomain: "awpdemo-6d917.firebaseapp.com",
+            databaseURL: "https://awpdemo-6d917-default-rtdb.firebaseio.com",
+            projectId: "awpdemo-6d917",
+            storageBucket: "awpdemo-6d917.firebasestorage.app",
+            messagingSenderId: "1083897195568",
+            appId: "1:1083897195568:web:a323c3f2e160452c82d1f5",
+            measurementId: "G-WBLXVKGENT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const val = id => document.getElementById(id).value;
+
+        const student = () => ({
+            name: val("name"),
+            branch: val("br"),
+            year: val("yr"),
+            cgpa: val("cg")
+        });
+
+        window.insertData = () =>
+            set(ref(db, "student/" + val("roll")), student())
+            .then(() => alert("Inserted"));
+
+        window.updateData = () =>
+            update(ref(db, "student/" + val("roll")), student())
+            .then(() => alert("Updated"));
+
+        window.deleteData = () =>
+            remove(ref(db, "student/" + val("roll")))
+            .then(() => alert("Deleted"));
+
+        window.displayData = () =>
+            get(ref(db, "student/" + val("roll")))
+            .then(s => {
+                document.getElementById("d").innerHTML =
+                    s.exists() ? JSON.stringify(s.val()) : "Not found";
+            });
+    </script>
+</body>
+</html>
+```
